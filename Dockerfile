@@ -19,12 +19,11 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install -r requirements.txt gunicorn
 
 COPY . .
-COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["/app/start.sh"]

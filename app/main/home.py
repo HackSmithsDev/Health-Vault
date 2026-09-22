@@ -1,4 +1,4 @@
-from flask import current_app, render_template, request, jsonify, url_for, redirect, session
+from flask import app, current_app, render_template, request, jsonify, url_for, redirect, session
 from flask_login import login_required, current_user, logout_user
 from werkzeug.utils import secure_filename
 
@@ -7,6 +7,11 @@ from . import main_bp
 from app.extensions import db
 from app.models import ClinicalSession
 import os
+
+
+@main_bp.route('/healthz')
+def healthz():
+    return "ok", 200
 
 @main_bp.route('/')
 def show_login_dialog():

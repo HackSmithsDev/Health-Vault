@@ -8,6 +8,8 @@ services:
     dockerContext: .
     healthCheckPath: /healthz
     envVars:
+      - key: PORT
+        value: "8081"
       - key: FLASK_ENV
         value: production
       - key: CLOUDFLARE_TUNNEL_TOKEN
