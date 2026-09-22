@@ -18,7 +18,7 @@ gunicorn_pid=$!
 # Do not let the tunnel hide a failed web process from Render's port scanner.
 ready=0
 for _ in 1 2 3 4 5 6 7 8 9 10; do
-    if curl --fail --silent --show-error "http://127.0.0.1:${PORT}/" >/dev/null 2>&1; then
+    if curl --fail --silent --show-error "http://127.0.0.1:${PORT}/healthz" >/dev/null 2>&1; then
         ready=1
         break
     fi

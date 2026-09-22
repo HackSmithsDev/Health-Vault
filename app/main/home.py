@@ -12,6 +12,11 @@ import os
 def show_login_dialog():
     return render_template('login_dialog.html')
 
+
+@main_bp.route('/healthz')
+def health_check():
+    return jsonify({'status': 'ok'}), 200
+
 @main_bp.route('/index')
 @login_required
 def index():
