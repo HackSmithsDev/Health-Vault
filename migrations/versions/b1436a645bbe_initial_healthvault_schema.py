@@ -1,8 +1,8 @@
-"""first commit
+"""initial healthvault schema
 
-Revision ID: 280526597e9f
+Revision ID: b1436a645bbe
 Revises: 
-Create Date: 2026-09-22 14:59:45.872937
+Create Date: 2026-09-23 01:17:18.591081
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '280526597e9f'
+revision = 'b1436a645bbe'
 down_revision = None
 branch_labels = None
 depends_on = None

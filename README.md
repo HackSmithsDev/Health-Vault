@@ -24,7 +24,7 @@ python3 wsgi.py
 Set `DATABASE_URL`, `REDIS_URL`, `GROQ_API_KEY`, and the SMTP variables in
 `.env`. Never commit `.env` or production credentials.
 
-The development server runs at `http://127.0.0.1:8080` when `FLASK_RUN_PORT`
+The development server runs at `http://127.0.0.1:8081` when `FLASK_RUN_PORT`
 is set to `8080`.
 
 ## AI models
