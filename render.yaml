@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: health-vault
+    runtime: docker
+    plan: starter
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: CLOUDFLARE_TUNNEL_TOKEN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_FROM_NAME
+        sync: false
+      - key: MAIL_SERVER
+        value: smtpout.secureserver.net
+      - key: MAIL_PORT
+        value: "465"
+      - key: MAIL_USE_TLS
+        value: "False"
+      - key: MAIL_USE_SSL
+        value: "True"
