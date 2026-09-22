@@ -1,0 +1,37 @@
+# --- Python Caches & Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+instance/
+.webassets-cache
+
+# --- Database & Migrations ---
+*.sqlite3
+*.db
+# We keep the migrations folder structure but ignore the actual pyc files
+migrations/__pycache__/
+ai/ai_models
+
+# --- AI & Logs ---
+*.log
+.google_auth_cache
+vector_store/
+nltk_data/
+
+# --- Docker & OS ---
+.dockerignore
+docker-compose.override.yml
+.DS_Store
+Thumbs.db
+
+# --- IDE Settings ---
+.vscode/
+.idea/
+*.swp
+
+migrations
+uploads

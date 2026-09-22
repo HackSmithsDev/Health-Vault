@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stitch AI | {% block title %}{% endblock %}</title>
+    
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='assets/icons/medical-heart.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block extra_css %}{% endblock %}
+    <script>
+        // Apply theme immediately to prevent flashing on M2 Macs
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
+</head>
+<body>
+
+    <div id="sidebar" class="sidebar-hidden d-flex flex-column shadow">
+        <div class="sidebar-header d-flex align-items-center justify-content-end p-3">
+            <button class="btn border-0 p-0 text-muted" id="menu-close" title="Close Menu">
+                <i class="bi bi-x-lg fs-4"></i>
+            </button>
+        </div>
+        
+        <div class="p-4 pt-2 flex-grow-1 overflow-y-auto">
+            <ul class="nav flex-column gap-1 list-unstyled">
+                <li class="nav-item mb-2">
+                    <a class="nav-link rounded py-2 px-3 bg-primary text-white shadow-sm" href="{{ url_for('main.index') }}">
+                        <i class="bi bi-grid-1x2-fill me-2"></i>{% if session['user_role'] == 'provider' %} Clinical Dashboard {% endif %} {% if session['user_role'] == 'patient' %} Patient Portal {% endif %} 
+                    </a>
+                </li>
+                
+                <small class="sidebar-project-label text-uppercase text-muted fw-bold px-3 mb-2 d-block" style="font-size: 0.7rem; letter-spacing: 1px;">
+                    Diagnostic Units
+                </small>
+                
+                {# 
+                   IMPROVEMENT: We now pull from 'diagnostic_units' global variable 
+                   (Ensure you pass these to the template via a context processor) 
+                #}
+                {% for unit in diagnostic_units %}
+                <li class="nav-item">
+                    <button class="nav-link btn w-100 d-flex justify-content-between align-items-center rounded border-0 py-2 {% if session['user_role'] == 'patient' %} disabled {% endif %}"
+                        {% if session['user_role'] == 'patient' %} disabled {% endif %}
+                        data-bs-toggle="collapse" data-bs-target="#collapse{{ unit.id }}">
+                        <span>
+                           <i class="bi {{ 'bi-lungs' if unit.name == 'Pulmonology' else 
+                                'bi-file-medical' if unit.name == 'Radiology' else 
+                                'bi-heart-pulse' if unit.name == 'Cardiology' else 
+                                'bi-droplet-half' if unit.name == 'Hematology' else 
+                                'bi-cpu' }} me-2 text-primary"></i>
+                            {{ unit.name }}
+                        </span>
+                        <i class="bi bi-chevron-right small opacity-50"></i>
+                    </button>
+                    <div class="collapse" id="collapse{{ unit.id }}">
+                        <ul class="list-unstyled ps-4 py-1 border-start ms-4">
+                            {% for subject in unit.subjects %}
+                            <li>
+                                <a href="{{ url_for('main.subject_chapters', unit_id=unit.id, subject_name=subject.name) }}" 
+                                class="nav-link py-1 small sidebar-session-link text-secondary">
+                                {{ subject.name }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="sidebar-footer p-3 border-top bg-light">
+            <a class="nav-link rounded small text-dark fw-bold" href="{{ url_for('main.settings') }}">
+                <i class="bi bi-shield-lock me-2 text-primary"></i> Compliance & Data Vault
+            </a>
+        </div>
+    </div>
+
+    <div id="main-wrapper">
+        <header class="navbar navbar-expand px-4 py-2 border-bottom sticky-top bg-body shadow-sm">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    <button title="Toggle Sidebar" class="btn border-0 p-0 me-3" id="menu-toggle">
+                        <i class="bi bi-list fs-2"></i>
+                    </button>
+                    <a href="/" class="navbar-brand fw-bold h3 mb-0 text-primary" style="letter-spacing: -1px;">STITCH AI</a>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <button title="Toggle Theme" class="btn btn-link text-body p-0 shadow-none" id="theme-toggle">
+                        <i class="bi bi-moon-stars fs-5"></i>
+                    </button>
+
+                    {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <img src="{{ url_for('static', filename= current_user.avatar_path) }}" 
+                            class="rounded-circle cursor-pointer border" width="38" height="38" 
+                            data-bs-toggle="dropdown" alt="User Profile">
+                        
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 p-3 dropdown-menu-profile">
+                            <li class="text-center pb-3">
+                                <div class="position-relative d-inline-block">
+                                    <img src="{{ url_for('static', filename= current_user.avatar_path) }}" 
+                                        class="rounded-circle border shadow-sm avatar-large" alt="">
+                                    
+                                    <label for="avatar-upload" 
+                                        class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm cursor-pointer avatar-edit-badge" 
+                                        title="Change Profile Picture"
+                                        aria-label="Upload new profile picture">
+                                        
+                                        <i class="bi bi-camera-fill small" aria-hidden="true"></i>
+                                        
+                                        <input type="file" 
+                                            id="avatar-upload" 
+                                            name="avatar" 
+                                            class="d-none" 
+                                            accept="image/*"
+                                            title="Choose profile image"> </label>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <h6 class="mb-0 fw-bold">{{ current_user.full_name }}</h6>
+                                    <p class="text-muted small mb-0">{{ current_user.email }}</p>
+                                    <span class="badge bg-light text-primary border mt-1 badge-profession">{{ current_user.profession }}</span>
+                                </div>
+                            </li>
+
+                            <li><hr class="dropdown-divider sidebar-divider-custom"></li>
+
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2" href="#" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                    <i class="bi bi-person-bounding-box me-3 text-primary"></i>Edit Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2" href="{{ url_for('main.settings') }}">
+                                    <i class="bi bi-sliders2-vertical me-3 text-primary"></i>Account Settings
+                                </a>
+                            </li>
+
+                            <li><hr class="dropdown-divider mx-n3"></li>
+
+                            <li>
+                                <a class="dropdown-item text-danger rounded-3 py-2" href="javascript:void(0);" id="logout-link">
+                                    <i class="bi bi-box-arrow-left me-3"></i>Sign Out
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <div id="sidebar-overlay" class="d-none"></div>
+
+    <div class="modal fade" id="admissionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white py-3">
+                    <h5 class="modal-title fw-bold" id="modal-title-text">
+                        <i class="bi bi-shield-plus me-2"></i>Clinical Admission
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" id="reset-modal-btn"></button>
+                </div>
+                
+                <form id="admission-init-form" method="POST" action="/api/clinical/admission">
+                    <div class="modal-body p-4">
+                        
+                        <div id="probe-section">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Patient Identification</label>
+                            <div class="input-group shadow-sm mb-2">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-primary"></i></span>
+                                <input type="email" class="form-control border-start-0 ps-0" id="patient-email-probe" name="email" placeholder="Enter patient email..." required>
+                                <button class="btn btn-primary fw-bold" type="button" id="btn-verify-identity">Send Code</button>
+                            </div>
+                            <div id="probe-feedback" class="extra-small mt-1"></div>
+                        </div>
+                        <div id="codeSection" class="d-none mt-3 animate-fade-in">
+                            <label class="form-label small fw-bold text-primary text-uppercase">Security Verification</label>
+                            <div class="input-group shadow-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="bi bi-shield-lock text-primary"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="verificationCode" placeholder="Enter 6-digit code...">
+                                <button class="btn btn-primary fw-bold" type="button" id="btn-submit-code">Verify</button>
+                            </div>
+                            <div class="extra-small text-muted mt-1">Check the patient's registered email for the vault access code.</div>
+                        </div>
+
+                        <div id="dynamic-admission-fields" class="d-none mt-4 animate-fade-in">
+                            
+                            <div id="registration-fields" class="d-none border-start border-primary border-4 ps-3 mb-4">
+                                <h6 class="fw-bold text-primary mb-3">New Patient Registry</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Full Legal Name</label>
+                                    <input type="text" class="form-control" name="full_name" id="reg-full-name" placeholder="Dr. John Doe">
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">MRN</label>
+                                        <input type="text" class="form-control" name="mrn" id="reg-mrn" placeholder="MRN-XXXX">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Date of Birth</label>
+                                        <input type="date" class="form-control" name="dob" id="reg-dob">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Blood Group</label>
+                                        <select name="blood_group" id="reg-blood-group" class="form-select">
+                                            <option value="" selected>Unspecified</option>
+                                            {% for group in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                            <option value="{{ group }}">{{ group }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="session-fields">
+                                <h6 class="fw-bold text-dark mb-3">Clinical Evidence & Intake</h6>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Initial Diagnostic Scan</label>
+                                    <div class="upload-drop-zone border border-dashed rounded-4 p-4 text-center bg-light shadow-sm" id="admission-drop-zone">
+                                        <input type="file" name="file" id="admission-file-input" class="d-none" accept="image/*,.pdf" required>
+                                        <div class="upload-icon-wrapper mb-2">
+                                            <i class="bi bi-cloud-arrow-up-fill text-primary fs-2"></i>
+                                        </div>
+                                        <p class="small fw-bold mb-1" id="file-status-text">Drop scan here or click to upload</p>
+                                        <p class="extra-small text-muted mb-0">AI will automatically detect Clinical Unit & Subject</p>
+                                    </div>
+                                    <div id="file-preview-container" class="mt-2 d-none">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle py-2 px-3 rounded-pill w-100 d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-check-fill me-2"></i>
+                                            <span id="selected-filename" class="text-truncate"></span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold text-muted text-uppercase">Clinical Context / Observations</label>
+                                    <textarea class="form-control border-primary-subtle shadow-sm rounded-3" 
+                                            name="session_name" 
+                                            id="session-name-input" 
+                                            rows="3" 
+                                            placeholder="e.g. 45yo male presenting with acute chest pain and shortness of breath..." 
+                                            required></textarea>
+                                    <div class="extra-small text-muted mt-2 px-1">
+                                        <i class="bi bi-stars text-primary me-1"></i> Specialist AI will use this context to enhance its interpretation.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 p-4 pt-0">
+                        <button type="submit" id="btn-submit-admission" class="btn btn-primary w-100 fw-bold py-2 shadow-sm d-none">
+                            Confirm & Initialize Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-white border-bottom py-3 px-4">
+                    <h5 class="modal-title fw-bold text-dark">
+                        <i class="bi bi-person-lines-fill text-primary me-2"></i>Personal Registry Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form id="form-update">
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Full Legal Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                <input type="text" name="full_name" class="form-control border-start-0 ps-0" 
+                                    value="{{ current_user.full_name }}" placeholder="e.g. Dr. Alexander Knight" required>
+                            </div>
+                        </div>
+
+                        {% if current_user.hospital_license %}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Affiliated Institution</label>
+                            <input type="text" name="institution_name" class="form-control" 
+                                value="{{ current_user.institution_name }}" placeholder="Hospital or Clinic Name">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Clinical Specialty</label>
+                                <input type="text" name="profession" class="form-control" 
+                                    value="{{ current_user.profession }}" placeholder="e.g. Cardiology">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Date of Registration</label>
+                                <input type="date" name="registration_date" class="form-control" 
+                                    value="{{ current_user.date_of_registration.strftime('%Y-%m-%d') if current_user.date_of_registration else '' }}">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Experience</label>
+                                <div class="input-group">
+                                    <input type="number" name="experience" class="form-control" 
+                                        value="{{ current_user.experience }}" min="0">
+                                    <span class="input-group-text bg-light small">Yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Date of Birth</label>
+                                <input type="date" name="dob" class="form-control" 
+                                    value="{{ current_user.date_of_birth.strftime('%Y-%m-%d') if current_user.date_of_birth else '' }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Blood Group</label>
+                                <select name="blood_group" class="form-select">
+                                    <option value="" {{ 'selected' if not current_user.blood_group }}>Unspecified</option>
+                                    {% for group in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                    <option value="{{ group }}" {{ 'selected' if current_user.blood_group == group }}>{{ group }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-muted text-uppercase">Registry ID</label>
+                                <input type="text" class="form-control bg-light" 
+                                    value="{{ current_user.medical_record_number }}" readonly>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-4 pt-3 border-top d-flex gap-2">
+                            <button type="button" class="btn btn-light flex-grow-1 fw-bold" data-bs-dismiss="modal">Discard</button>
+                            <button type="submit" class="btn btn-primary flex-grow-1 fw-bold shadow-sm">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel">
+        <div class="modal-dialog modal-versatile modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-warning">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-key-fill me-2"></i>Update Password</h6>
+                    <button title="dismiss" type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="password-change-form">
+                        <div class="mb-3">
+                            <label for="old-p" class="form-label small fw-bold">Current Password</label>
+                            <input type="password" class="form-control" id="old-p" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-p" class="form-label small fw-bold">New Password</label>
+                            <input type="password" class="form-control" id="new-p" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="conf-p" class="form-label small fw-bold">Confirm New Password</label>
+                            <input type="password" class="form-control" id="conf-p" required>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 fw-bold">Update Security</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="supportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white p-4">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-headset me-2"></i>Practitioner Support</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Urgent technical or diagnostic model issues? Our engineering team is on standby.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Issue Category</label>
+                        <select id="issue_type" class="form-select">
+                            <option>Model Anomaly / False Positive</option>
+                            <option>DICOM Upload Failure</option>
+                            <option>System Latency</option>
+                            <option>Compliance/Data Request</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted text-uppercase">Clinical Details</label>
+                        <textarea id="supportDetails" class="form-control" rows="4" placeholder="Describe the incident..."></textarea>
+                    </div>
+                    <button id="submitTicketBtn" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Submit Incident Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header {% if current_user.is_authenticated %}bg-success{% else %}bg-primary{% endif %} text-white py-3">
+                    <h5 class="modal-title fw-bold">
+                        <i class="bi {% if current_user.is_authenticated %}bi-check-circle-fill{% else %}bi-shield-lock{% endif %} me-2"></i>
+                        Clinical Status
+                    </h5>
+                </div>
+                <div class="modal-body text-center py-5">
+                    {% if current_user.is_authenticated %}
+                    {% if session['user_role'] == 'clinician' %}
+                    <h4 class="fw-bold">Welcome, {{ current_user.full_name }}</h4>
+                    <p class="text-muted">License Verified. Diagnostic Units are online.</p>
+                    {% else %}
+                    <h4 class="fw-bold">Welcome to Your Patient Portal</h4>
+                    <p class="text-muted">Your registry is active. Access personalized health insights and AI-driven screenings.</p>
+                    {% endif %}
+                    {% else %}
+                    <h4 class="fw-bold">Authentication Required</h4>
+                    <p class="text-muted">Please sign in to access your data and AI screening.</p>
+                    {% endif %}
+                </div>
+                <div class="modal-footer border-0 d-flex justify-content-center pb-4">
+                    {% if current_user.is_authenticated %}
+                        <button type="button" class="btn btn-success px-5 fw-bold rounded-pill" data-bs-dismiss="modal">Access Dashboard</button>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-primary px-5 fw-bold rounded-pill">Login Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Permanent Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-trash3 text-danger fs-1"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Wait! Before you go...</h5>
+                    <p class="text-secondary mb-0">
+                        Deleting your account will <strong>permanently dissolve</strong> your research vault, 
+                        including all curated <strong>projects</strong>, session progress, and AI settings. 
+                        Your data will be <span class="text-danger fw-bold">lost forever.</span>
+                    </p>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Keep My Account</button>
+                    <button type="button" id="confirm-delete-btn" class="btn btn-danger px-4 fw-bold">Delete Permanently</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

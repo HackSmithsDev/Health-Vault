@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}{{ clinical_session.session_name }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('api.static', filename='css/session.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="chat-interface">
+    <div class="session-status-bar bg-white border-bottom px-4 py-2 d-flex justify-content-between align-items-center">
+        <div id="session-identity-header">
+            <span class="small text-muted">Intake ID: <strong>#{{ clinical_session.id }}</strong></span>
+            <span id="unit-badge" class="ms-2 badge {% if clinical_session.status == 'Processing' %}bg-primary-subtle text-primary placeholder-glow{% else %}bg-light text-dark border{% endif %}">
+                {{ clinical_session.unit_id }}
+            </span>
+        </div>
+        <span id="session-badge" class="badge rounded-pill 
+            {% if clinical_session.status == 'Completed' %}bg-success
+            {% elif clinical_session.status == 'Processing' %}bg-info pulse-animation
+            {% else %}bg-warning{% endif %}">
+            {{ clinical_session.status }}
+        </span>
+    </div>
+
+    <div id="chat-container" role="log" aria-live="polite" aria-label="Clinical diagnostic log">
+        {% for msg in messages %}
+            {% if msg.sender == 'user' %}
+            <div class="message-group mb-4 user-message d-flex flex-column align-items-end">
+                <div class="message-bubble rounded-4 shadow-sm border">
+                    
+                    {% if msg.image %}
+                        {% if msg.image.file_path.lower().endswith('.pdf') %}
+                            {# FIX 1: Removed JS variable syntax that caused "',' expected" errors #}
+                            <div class="mb-2 p-3 bg-light border rounded-3 d-flex align-items-center text-dark pdf-document-card" 
+                                 onclick="window.open('{{ url_for('static', filename=msg.image.file_path) }}', '_blank')">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-3 me-3"></i>
+                                <div class="d-flex flex-column overflow-hidden">
+                                    <span class="small fw-bold text-truncate">View Medical Record</span>
+                                    <span class="smaller text-muted">Click to view scan PDF</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename=msg.image.file_path) }}" 
+                                    alt="Clinical Scan"
+                                    class="rounded-3 shadow-sm img-fluid border scan-display-frame" 
+                                    onclick="window.open(this.src, '_blank')">
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <div class="message-text p-1">
+                        {{ msg.content|safe }}
+                    </div>
+                </div>
+                <small class="text-muted mt-1 me-2 meta-timestamp">{{ msg.timestamp.strftime('%I:%M %p') }}</small>
+            </div>
+            
+            {% else %}
+            
+            <div class="message-group mb-4 ai-message d-flex flex-column align-items-start">
+                <div class="d-flex align-items-center mb-1 ms-2">
+                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                        <i class="bi bi-robot text-white" style="font-size: 0.8rem;"></i>
+                    </div>
+                    <span class="fw-bold small text-primary">Stitch AI Specialist</span>
+                </div>
+                <div class="message-bubble rounded-4 shadow-sm border-start border-primary border-4">
+                    <div class="message-body text-break">
+                        {{ msg.content|replace('\n', '<br>')|safe }}
+                    </div>
+                    {% if msg.report_data %}
+                    <div class="diagnostic-card mt-3 p-3 border rounded-3 bg-white shadow-sm border-primary-subtle">
+                        <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                            <div>
+                                <h6 class="m-0 small fw-bold text-uppercase text-primary">Master Diagnostic Record</h6>
+                                <span class="smaller text-muted">Subject: {{ msg.report_data.prediction_label }}</span>
+                            </div>
+                            <button onclick="exportReport('{{ msg.report_data.report_id }}')" 
+                                    class="btn btn-sm btn-outline-primary py-1 px-3 shadow-sm rounded-pill">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i>Export Final
+                            </button>
+                        </div>
+                        
+                        {% set conf_val = msg.report_data.confidence_score|round(0)|int %}
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ conf_val }}%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="smaller text-muted">M2-Router Confidence</span>
+                            <span class="smaller fw-bold text-success">{{ conf_val }}%</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <small class="text-muted mt-1 ms-2 meta-timestamp">{{ msg.timestamp.strftime('%I:%M %p') }}</small>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="chat-input-wrapper bg-white border-top">
+        <div class="container-fluid py-3">
+            <div id="attachment-preview" class="d-flex gap-2 px-3 mb-2" aria-live="polite"></div>
+
+            <div class="ai-action-chips d-flex gap-2 px-3 mb-2 overflow-x-auto pb-1" id="command-chips">
+                <button class="btn btn-sm chip-btn" data-action="differential">
+                    <i class="bi bi-diagram-3 me-1"></i>Differential
+                </button>
+                <button class="btn btn-sm chip-btn" data-action="generate_report">
+                    <i class="bi bi-file-earmark-medical me-1"></i>Official Report
+                </button>
+            </div>
+            
+            <div class="chat-input-container shadow-sm mx-auto">
+                <input type="file" id="hidden-file-input" class="d-none" 
+                       accept="image/*,.pdf" aria-label="Upload clinical scans">
+                
+                <div class="dropup">
+                    <button title="Attach Clinical Data" class="btn btn-link text-secondary border-0 py-2" type="button" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-circle-fill fs-5"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-attach p-2 shadow border-0">
+                        <li><a class="dropdown-item attach-option rounded-3" href="#" data-type="img">
+                            <i class="bi bi-camera-reuters me-2 text-primary"></i>Diagnostic Scan (Image)</a></li>
+                        <li><a class="dropdown-item attach-option rounded-3" href="#" data-type="doc">
+                            <i class="bi bi-file-earmark-medical me-2 text-danger"></i>Medical Record (PDF)</a></li>
+                    </ul>
+                </div>
+
+                <input type="text" id="chat-input-field" class="form-control" 
+                       placeholder="Enter clinical observations or symptoms..." 
+                       autocomplete="off">
+
+                <div id="action-button-container" class="d-flex pe-1">
+                    <button title="Voice Input" class="send-btn btn-primary rounded-circle" id="voice-input-btn">
+                        <i class="bi bi-mic-fill"></i>
+                    </button>
+                    <button title="Send Message" class="send-btn btn-primary rounded-circle d-none" id="send-btn">
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const CURRENT_SESSION_ID = "{{ clinical_session.id }}";
+</script>
+<script src="{{ url_for('api.static', filename='js/session.js') }}"></script>
+{% endblock %}

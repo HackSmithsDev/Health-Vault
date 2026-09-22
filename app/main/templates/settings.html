@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Settings | Stitch AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('main.static', filename='css/settings.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="mb-4 d-flex justify-content-between align-items-end">
+        <div>
+            <h2 class="fw-bold text-primary"><i class="bi bi-sliders2-vertical me-2"></i>System Preferences</h2>
+            <p class="text-muted">Configure your diagnostic environment and reporting standards.</p>
+        </div>
+        <div class="badge bg-success-subtle text-success p-2 px-3 rounded-pill border border-success-subtle" id="sync-status-badge">
+            <span id="sync-status-text"><i class="bi bi-shield-check me-1"></i> System Status: Optimal</span>
+        </div>
+    </div>
+
+    <form id="settings-form">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-cpu me-2 text-primary"></i>AI Engine Configuration</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold d-block">Analysis Depth (Inference Mode)</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check reactive-setting" name="intelligence_mode" id="mode1" value="Instant" 
+                                    {% if settings.intelligence_mode == 'Instant' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary py-3" for="mode1">
+                                    <strong>Standard</strong><br><small>Optimized for Speed</small>
+                                </label>
+                                
+                                <input type="radio" class="btn-check reactive-setting" name="intelligence_mode" id="mode2" value="Deep" 
+                                    {% if settings.intelligence_mode == 'Deep' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary py-3" for="mode2">
+                                    <strong>Deep Analysis</strong><br><small>High-Precision Reasoning</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <label for="language" class="form-label fw-semibold">Default Diagnostic Language</label>
+                            <select class="form-select reactive-setting" id="language" name="language">
+                                <option value="English" {% if settings.language == 'English' %}selected{% endif %}>English (International Medical)</option>
+                                <option value="Spanish" {% if settings.language == 'Spanish' %}selected{% endif %}>Spanish</option>
+                                <option value="French" {% if settings.language == 'French' %}selected{% endif %}>French</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-eye me-2 text-primary"></i>Interface Preferences</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="font-style" class="form-label fw-semibold">Font Family</label>
+                                <select class="form-select reactive-setting" id="font-style" name="font_style">
+                                    <option value="system" {% if settings.font_style == 'system' %}selected{% endif %}>System Default</option>
+                                    <option value="serif" {% if settings.font_style == 'serif' %}selected{% endif %}>Medical Serif (Academic)</option>
+                                    <option value="sans-serif" {% if settings.font_style == 'sans-serif' %}selected{% endif %}>Modern Sans</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <label for="fontSizeRange" class="form-label fw-semibold">Interface Scaling</label>
+                                <input type="range" class="form-range reactive-setting" name="font_size" min="12" max="18" step="1" 
+                                    value="{{ settings.font_size }}" id="fontSizeRange">
+                                <div class="small text-muted mt-1"><span id="fontSizeVal">{{ settings.font_size }}</span>px</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4 bg-dark text-white">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3 text-primary">Reporting Standards</h6>
+                        <p class="small opacity-75">Settings applied to patient-facing PDF exports.</p>
+                        
+                        <label for="headerStyleSelect" class="form-label small fw-bold text-uppercase opacity-50">Header Style</label>
+                        <select class="form-select border-0 mb-3 bg-secondary bg-opacity-25 text-white reactive-setting" id="headerStyleSelect" name="header_style">
+                            <option value="Standard" {% if settings.header_style == 'Standard' %}selected{% endif %}>Show Institutional Info</option>
+                            <option value="Anonymous" {% if settings.header_style == 'Anonymous' %}selected{% endif %}>Anonymized Practitioner ID</option>
+                        </select>
+                        
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input reactive-setting" type="checkbox" name="show_digital_stamp" id="showStamp" 
+                                {% if settings.show_digital_stamp %}checked{% endif %}>
+                            <label class="form-check-label small" for="showStamp">Apply Digital Verification Stamp</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Support & Compliance</h6>
+                        
+                        <button type="button" class="btn btn-light w-100 mb-2 d-flex align-items-center justify-content-between border" 
+                                data-bs-toggle="modal" data-bs-target="#supportModal">
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary-subtle text-primary rounded p-2 me-3">
+                                    <i class="bi bi-headset"></i>
+                                </div>
+                                <div class="text-start">
+                                    <div class="fw-bold small">Clinical Help Center</div>
+                                    <div class="extra-small text-muted">Technical & Model Support</div>
+                                </div>
+                            </div>
+                            <i class="bi bi-chevron-right small text-muted"></i>
+                        </button>
+
+                        <button type="button" id="reset-settings-btn" class="btn btn-outline-secondary w-100 mb-2 d-flex align-items-center justify-content-between border text-start py-2">
+                             <span><i class="bi bi-arrow-counterclockwise me-2"></i>Reset System Defaults</span>
+                             <i class="bi bi-chevron-right small"></i>
+                        </button>
+
+                        <hr class="my-3 opacity-50">
+
+                        <button type="button" class="btn btn-outline-dark w-100 mb-2 d-flex align-items-center justify-content-between" 
+                                data-bs-toggle="modal" data-bs-target="#passwordModal">
+                            <span><i class="bi bi-shield-lock me-2"></i>Update Security Vault</span>
+                            <i class="bi bi-chevron-right small"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-between" 
+                                data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <span><i class="bi bi-trash3 me-2"></i>Revoke Access</span>
+                            <i class="bi bi-chevron-right small"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('main.static', filename='js/settings.js') }}"></script>
+{% endblock %}

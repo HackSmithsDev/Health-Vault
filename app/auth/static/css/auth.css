@@ -1,0 +1,78 @@
+/* Ensure the body takes up the full screen height */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;      /* Vertical centering */
+    justify-content: center;   /* Horizontal centering */
+    background: #f8f9fa;       /* Light grey background */
+}
+
+/* The wrapper handles the padding for mobile screens */
+.auth-wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;          /* Clean, standard auth width */
+    background: #ffffff;
+    border-radius: 16px;       /* Modern rounded corners */
+    border: 1px solid rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+/* Optional: Subtle glow to make the centered box pop */
+.auth-card:hover {
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+
+.auth-box {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.otp-input {
+    width: 50px;
+    height: 60px;
+}
+
+/* CogniLit AI Theme Colors */
+.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    transform: scale(1.02);
+}
+
+/* Styling the single OTP input to look spaced out */
+.otp-single-field {
+    letter-spacing: 0.5rem;
+    padding-left: 0.5rem; /* Offsets the spacing so text stays centered */
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    height: 60px;
+}
+
+.otp-single-field:focus {
+    border-color: #0d6efd;
+    letter-spacing: 0.6rem; /* Subtle expansion on focus */
+    transition: all 0.2s ease;
+}
+
+/* Tracking utility if not using Bootstrap 5.3+ */
+.tracking-widest {
+    letter-spacing: 0.5rem;
+}

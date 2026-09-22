@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stitch AI | Clinical Portal</title>
+    
+    <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/medical-heart.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="{{ url_for('auth.static', filename='css/auth.css') }}">
+</head>
+<body class="bg-light-subtle">
+
+    <div class="auth-wrapper d-flex align-items-center justify-content-center min-vh-100">
+        <div class="auth-card shadow-lg bg-body p-4 p-md-5 rounded-4 border-0">
+        
+            <div class="text-center mb-4">
+                <div class="mb-2">
+                    <img src="https://img.icons8.com/fluency/64/shield-with-heart.png" alt="Stitch Logo">
+                </div>
+                <h2 class="fw-bold text-primary">STITCH AI</h2>
+                <p class="text-muted small px-3" id="auth-subtitle">Secure Clinical Access & Diagnostic Literacy Portal</p>
+            </div>
+
+            <div id="signin-box" class="auth-box">
+                <form id="form-signin">
+                    <div class="mb-3">
+                        <label for="signin-email" class="form-label small fw-bold text-uppercase text-muted">Hospital Email</label>
+                        <input type="email" id="signin-email" class="form-control py-2 shadow-sm" placeholder="dr.smith@hospital.org" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label for="signin-password" class="form-label small fw-bold text-uppercase text-muted">Password</label>
+                            <a href="#" class="small text-decoration-none switch-box" data-target="forgot-box">Reset Key</a>
+                        </div>
+                        <input type="password" id="signin-password" class="form-control py-2 shadow-sm" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                        <i class="bi bi-unlock-fill me-2"></i> Authenticate
+                    </button>
+                </form>
+                <div class="text-center mt-4">
+                    <p class="small mb-0">New Practitioner? <a href="#" class="text-decoration-none fw-bold switch-box" data-target="signup-box-1">Register for Access</a></p>
+                </div>
+            </div>
+
+            <div id="signup-box-1" class="auth-box d-none">
+                <form id="form-signup-step1">
+                    <div class="mb-3">
+                        <label for="signup-email" class="form-label small fw-bold text-uppercase text-muted">Professional Email</label>
+                        <input type="email" id="signup-email" name="email" class="form-control py-2" placeholder="name@institution.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-password" class="form-label small fw-bold text-uppercase text-muted">System Password</label>
+                        <input type="password" id="signup-password" name="password" class="form-control py-2" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="signup-password-confirm" class="form-label small fw-bold text-uppercase text-muted">Verify Password</label>
+                        <input type="password" id="signup-password-confirm" name="confirm_password" class="form-control py-2" required>
+                    </div>
+                    <button type="button" id="btn-signup-next" class="btn btn-primary w-100 py-2 fw-bold">Continue Profile</button>
+                </form>
+                <div class="text-center mt-4">
+                    <a href="#" class="small text-decoration-none switch-box" data-target="signin-box">Already Registered? Sign In</a>
+                </div>
+            </div>
+
+            <div id="signup-box-2" class="auth-box d-none">
+                <form id="form-signup-final">
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Clinic / Hospital Name</label>
+                        <div class="input-group shadow-sm border border-primary-subtle rounded">
+                            <span class="input-group-text bg-primary-subtle text-primary"><i class="bi bi-hospital"></i></span>
+                            <input type="text" name="institution_name" class="form-control py-2" placeholder="e.g. St. Jude Medical Center" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Facility License Number</label>
+                        <input type="text" name="hospital_license" class="form-control py-2 shadow-sm" placeholder="Institutional Regulatory ID" required>
+                    </div>
+
+                    <hr class="my-4 text-muted">
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Practitioner Full Name (Legal)</label>
+                        <div class="input-group shadow-sm">
+                            <span class="input-group-text bg-light"><i class="bi bi-person-badge"></i></span>
+                            <input type="text" name="full_name" class="form-control py-2" placeholder="e.g. Dr. Jane Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label for="signup-profession" class="form-label small fw-bold text-uppercase text-muted">
+                            Specialization / Profession
+                        </label>
+                        <select class="form-select shadow-sm border-primary-subtle" id="signup-profession" name="profession" required>
+                            <option value="" selected disabled>Select Specialty...</option>
+                            
+                            {# Dynamically pull Units (Pulmonology, Radiology, etc.) from the DB #}
+                            {% for unit in diagnostic_units %}
+                                <option value="{{ unit.name }}">{{ unit.name }}</option>
+                            {% endfor %}
+                            
+                            <option value="General Practitioner">General Practitioner</option>
+                        </select>
+                        <div class="form-text extra-small text-muted">
+                            This aligns your account with specific diagnostic protocols.
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Personal Medical License (NPI/Reg No.)</label>
+                        <input type="text" name="personal_license" class="form-control py-2 shadow-sm" placeholder="e.g. 10-digit NPI or Regional ID" required>
+                    </div>
+
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-7">
+                            <label for="registration_date" class="form-label small fw-bold text-uppercase text-muted">Date of Registration</label>
+                            <input type="date" name="registration_date" id="registration_date" class="form-control py-2 shadow-sm" required>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold text-uppercase text-muted">Practice (Years)</label>
+                            <input type="number" name="experience" class="form-control py-2 shadow-sm" placeholder="0" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" id="btn-signup-back" class="btn btn-outline-secondary w-50 py-2 fw-bold">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </button>
+                        <button type="submit" class="btn btn-success w-50 py-2 fw-bold shadow-sm">
+                            Finalize Registry <i class="bi bi-shield-check"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="verify-box" class="auth-box d-none text-center">
+                <div class="mb-4">
+                    <i class="bi bi-shield-lock-fill text-primary fs-1"></i>
+                    <h5 class="mt-2 fw-bold">MFA Verification</h5>
+                    <p class="small text-muted">Enter the 6-digit clinical access code sent to your inbox.</p>
+                </div>    
+                <form id="form-verify">
+                    <div class="mb-4">
+                        <input type="text" id="otp-single" 
+                            class="form-control text-center fs-2 fw-bold tracking-widest border-primary" 
+                            maxlength="6" inputmode="numeric" placeholder="000000" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Authorize Device</button>
+                </form>
+            </div>
+
+            <div id="forgot-box" class="auth-box d-none">
+                <p class="small text-muted mb-4">Enter your hospital email to receive a secure recovery token.</p>
+                <form id="form-forgot">
+                    <div class="mb-3">
+                        <input type="email" id="forgot-email" class="form-control py-2" placeholder="email@hospital.org" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Request Token</button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="#" class="small text-decoration-none switch-box" data-target="signin-box">Return to Sign In</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('auth.static', filename='js/auth.js') }}"></script>
+</body>
+</html>

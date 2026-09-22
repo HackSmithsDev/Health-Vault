@@ -1,0 +1,98 @@
+/* --- CLINICAL SETTINGS SPECIFIC OVERRIDES --- */
+
+/* 1. Practitioner Badge (Avatar) Styling */
+.practitioner-badge-container {
+    position: relative;
+    display: inline-block;
+}
+
+#avatar-preview {
+    object-fit: cover;
+    background-color: #ffffff;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+#avatar-preview:hover {
+    border-color: var(--bs-primary);
+}
+
+/* 2. Diagnostic Depth Selectors (Radio Buttons) */
+/* Overrides standard btn-group for a more 'medical instrument' feel */
+.btn-check:checked + .btn-outline-primary {
+    background-color: rgba(13, 110, 253, 0.08); /* Soft clinical tint */
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+    font-weight: 600;
+}
+
+.btn-outline-primary {
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    background: #fff;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. Report Branding Accent Card */
+/* Gives the sidebar a "Verified" feel */
+.report-branding-card {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+    color: white;
+    border: none;
+}
+
+.report-branding-card .form-label {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.report-branding-card .form-select {
+    background-color: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.report-branding-card .form-select option {
+    color: #333;
+}
+
+/* 4. Floating Action Container */
+/* Positioned relative to the viewport for institutional urgency */
+.floating-save-container {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1060;
+}
+
+.floating-save-container .btn {
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.3);
+    padding: 0.8rem 2rem;
+}
+
+/* 5. Utility: Data Audit Logs Icon */
+.icon-xs {
+    font-size: 0.75rem;
+    vertical-align: middle;
+}
+
+/* 6. Typography Refinement */
+.text-uppercase-clinical {
+    letter-spacing: 0.08em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #6c757d;
+}
+
+/* Responsive adjustment for small medical tablets/screens */
+@media (max-width: 991.98s) {
+    .floating-save-container {
+        position: static;
+        padding: 1.5rem 0;
+        display: block;
+        text-align: center;
+    }
+    .floating-save-container .btn {
+        width: 100%;
+    }
+}

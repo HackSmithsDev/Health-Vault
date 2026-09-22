@@ -1,0 +1,169 @@
+:root {
+    --clinical-bg: #f4f7f6;
+    --medical-blue: #0d6efd;
+    --report-border: #e0e6ed;
+}
+
+body { background-color: var(--clinical-bg); }
+
+/* Fix the overall interface to prevent overflow/scrolling of the whole page */
+.chat-interface {
+    height: 90vh; /* Full viewport height */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevents the body from scrolling */
+}
+
+/* Diagnostic Sidebar Info */
+.session-status-bar {
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Chat Area */
+#chat-container {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 2rem 15% 5rem 15%; /* Centered reading width */
+    scroll-behavior: smooth;
+}
+
+/* Medical Bubbles */
+.message-bubble {
+    max-width: 80%;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    position: relative;
+}
+
+.user-message .message-bubble {
+    background: var(--medical-blue);
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.ai-message .message-bubble {
+    background: white;
+    color: #334155;
+    border-left: 4px solid var(--medical-blue);
+    border-bottom-left-radius: 2px;
+}
+
+/* Diagnostic Report Card */
+.diagnostic-card {
+    background: #f8fafc !important;
+    border: 1px solid var(--report-border) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+
+
+/* ==========================================================================
+   ACTION CHIPS (Command Gateway UI)
+   ========================================================================== */
+.ai-action-chips {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    
+    /* 1. Standard (Firefox/Modern Chrome) */
+    @supports (scrollbar-width: none) {
+        scrollbar-width: none;
+    }
+    
+    /* 2. Legacy Edge/IE */
+    -ms-overflow-style: none; 
+}
+
+/* 3. The "Workhorse" for Chrome, Safari, and iOS */
+/* This is what actually does the work in 90% of medical tablets/browsers */
+.ai-action-chips::-webkit-scrollbar {
+    display: none !important;
+    width: 0;
+    height: 0;
+}
+
+.chip-btn {
+    border-radius: 20px;
+    border: 1px solid var(--bs-border-color);
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Theme-aware states using base.css variables */
+.chip-btn:hover:not(.active) {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+
+.chip-btn.active {
+    background-color: var(--bs-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(var(--bs-primary-rgb), 0.2);
+}
+
+/* Theme Toggle Support for Dark Mode */
+[data-bs-theme="dark"] .chip-btn:not(.active) {
+    background-color: #2c343a;
+    color: var(--bs-gray-400);
+}
+
+/* Floating Input Bar */
+/* Anchor the Input Wrapper to the bottom */
+.chat-input-wrapper {
+    background: white; /* Give it a solid background to overlap any chat content */
+    border-top: 1px solid #eef2f6;
+    padding: 15px 0; /* Tighten up the vertical space */
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Refined Container for a "M2" feel */
+.chat-input-container {
+    background: #f8fafc; /* Subtle contrast from the white wrapper */
+    border-radius: 12px; /* Less "pill" shaped, more "console" shaped */
+    padding: 6px 12px;
+    max-width: 900px;
+    margin: 0 auto;
+    border: 1px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    transition: border-color 0.2s ease;
+}
+
+.chat-input-container:focus-within {
+    border-color: var(--medical-blue);
+    background: white;
+}
+
+.chat-input-container input {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Attachment Preview */
+#attachment-preview .preview-item {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--medical-blue);
+}
+
+
+.scan-display-frame { max-height: 280px; width: 100%; object-fit: contain; cursor: zoom-in; background: #000; }
+.pdf-document-card { cursor: pointer; transition: background 0.2s; }
+.pdf-document-card:hover { background-color: #f8f9fa !important; }
+.meta-timestamp { font-size: 0.7rem; }
