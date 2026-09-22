@@ -60,6 +60,10 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
+[data-bs-theme="dark"] .health-record-item:hover {
+    background-color: var(--bs-secondary-bg) !important;
+}
+
 .record-step-number {
     width: 32px;
     height: 32px;
@@ -73,6 +77,10 @@
     font-weight: 700;
 }
 
+[data-bs-theme="dark"] .record-step-number {
+    background: var(--bs-secondary-bg);
+}
+
 /* 4. Statistics & Metrics Cards */
 .metric-card {
     border-radius: 16px;
@@ -80,6 +88,10 @@
     padding: 1.5rem;
     border-bottom: 4px solid var(--stitch-blue);
     transition: transform 0.3s ease;
+}
+
+[data-bs-theme="dark"] .metric-card {
+    background: var(--bs-tertiary-bg);
 }
 
 .metric-card:hover {
@@ -90,8 +102,4 @@
 [data-bs-theme="dark"] .insight-card {
     background: linear-gradient(135deg, #1e252b 0%, #161c22 100%);
     border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-[data-bs-theme="dark"] .health-record-item:hover {
-    background-color: #2a3239 !important;
 }

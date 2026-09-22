@@ -6,6 +6,11 @@
 
 body { background-color: var(--clinical-bg); }
 
+[data-bs-theme="dark"] body {
+    --clinical-bg: var(--bs-body-bg);
+    --report-border: var(--bs-border-color);
+}
+
 /* Fix the overall interface to prevent overflow/scrolling of the whole page */
 .chat-interface {
     height: 90vh; /* Full viewport height */
@@ -50,11 +55,20 @@ body { background-color: var(--clinical-bg); }
     border-bottom-left-radius: 2px;
 }
 
+[data-bs-theme="dark"] .ai-message .message-bubble {
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
 /* Diagnostic Report Card */
 .diagnostic-card {
     background: #f8fafc !important;
     border: 1px solid var(--report-border) !important;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+[data-bs-theme="dark"] .diagnostic-card {
+    background: var(--bs-tertiary-bg) !important;
 }
 
 
@@ -130,6 +144,15 @@ body { background-color: var(--clinical-bg); }
     width: 100%;
 }
 
+[data-bs-theme="dark"] .chat-input-wrapper,
+[data-bs-theme="dark"] .chat-input-container {
+    background: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] .chat-input-container {
+    border-color: var(--bs-border-color);
+}
+
 /* Refined Container for a "M2" feel */
 .chat-input-container {
     background: #f8fafc; /* Subtle contrast from the white wrapper */
@@ -146,6 +169,10 @@ body { background-color: var(--clinical-bg); }
 .chat-input-container:focus-within {
     border-color: var(--medical-blue);
     background: white;
+}
+
+[data-bs-theme="dark"] .chat-input-container:focus-within {
+    background: var(--bs-body-bg);
 }
 
 .chat-input-container input {
@@ -167,3 +194,7 @@ body { background-color: var(--clinical-bg); }
 .pdf-document-card { cursor: pointer; transition: background 0.2s; }
 .pdf-document-card:hover { background-color: #f8f9fa !important; }
 .meta-timestamp { font-size: 0.7rem; }
+
+[data-bs-theme="dark"] .pdf-document-card:hover {
+    background-color: var(--bs-secondary-bg) !important;
+}

@@ -15,7 +15,7 @@ def generate_clinical_pdf(report_id):
     
     # --- Header: Institutional Info ---
     p.setFont("Helvetica-Bold", 16)
-    p.drawString(100, 750, f"STITCH AI - CLINICAL REPORT")
+    p.drawString(100, 750, f"Health Vault - CLINICAL REPORT")
     p.setFont("Helvetica", 10)
     p.drawString(100, 735, f"Institution: {provider.institution_name}")
     p.drawString(100, 720, f"Practitioner: {provider.full_name} ({provider.profession})")

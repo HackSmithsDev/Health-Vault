@@ -1,5 +1,5 @@
 /**
- * STITCH AI - CLINICAL SETTINGS ENGINE (2026)
+ * Health Vault - CLINICAL SETTINGS ENGINE (2026)
  * Synchronizes AI inference modes, UI scaling, and reporting standards.
  */
 

@@ -3,11 +3,11 @@ def get_signup_template(full_name):
     return f"""
     <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #d1d9e6; border-radius: 8px; padding: 40px; color: #1e293b; line-height: 1.6;">
         <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #0a58ca; margin: 0; font-size: 24px;">STITCH AI</h1>
+            <h1 style="color: #0a58ca; margin: 0; font-size: 24px;">Health Vault</h1>
             <p style="color: #64748b; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Clinical Diagnostic Portal</p>
         </div>
         <h2 style="color: #0f172a; margin-top: 0;">Access Granted: {full_name}</h2>
-        <p>Your practitioner account has been successfully verified and registered in the Stitch AI ecosystem.</p>
+        <p>Your practitioner account has been successfully verified and registered in the Health Vault ecosystem.</p>
         
         <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; margin: 25px 0;">
             <p style="margin: 0 0 10px 0; font-weight: bold; color: #334155;">Institutional Access Initialized:</p>
@@ -47,12 +47,12 @@ def get_signup_template_for_patient(full_name, temp_password, link):
     <body>
         <div class="email-container">
             <div class="header">
-                <h1>Stitch AI</h1>
+                <h1>Health Vault</h1>
                 <p>Advanced Clinical Diagnostics</p>
             </div>
             <div class="content">
                 <h2>Welcome, {full_name}</h2>
-                <p>A clinical practitioner has registered your profile on the <strong>Stitch AI Secure Network</strong>. You can now access your diagnostic reports, scan history, and AI-assisted clinical insights.</p>
+                <p>A clinical practitioner has registered your profile on the <strong>Health Vault Secure Network</strong>. You can now access your diagnostic reports, scan history, and AI-assisted clinical insights.</p>
                 
                 <div class="credentials-box">
                     <p style="margin: 0; font-weight: bold; color: #0d6efd;">Your Temporary Password:</p>
@@ -65,7 +65,7 @@ def get_signup_template_for_patient(full_name, temp_password, link):
                 </div>
             </div>
             <div class="footer">
-                <p>&copy; 2026 Stitch AI Clinical Network. All rights reserved.<br>
+                <p>&copy; 2026 Health Vault Clinical Network. All rights reserved.<br>
                 This is an automated clinical notification. Please do not reply.</p>
             </div>
         </div>
@@ -116,7 +116,7 @@ def get_account_deleted_template(full_name):
     <div style="font-family: sans-serif; max-width: 550px; margin: auto; border: 1px solid #fecaca; padding: 40px; border-radius: 8px;">
         <h2 style="color: #991b1b; margin-top: 0;">Registry Decommissioned</h2>
         <p>Practitioner: {full_name},</p>
-        <p>We confirm that your access to the Stitch AI Clinical Portal has been revoked and all associated session logs and metadata have been purged from the active registry.</p>
+        <p>We confirm that your access to the Health Vault Clinical Portal has been revoked and all associated session logs and metadata have been purged from the active registry.</p>
         <p style="font-size: 12px; color: #666; font-style: italic;">Reference ID: DEL-{full_name[:3].upper()}-2026</p>
     </div>
     """
@@ -126,20 +126,20 @@ def get_account_verificaton_template(full_name, verification_code):
     return f"""
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e1e8ed; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #0d6efd; color: white; padding: 30px; text-align: center;">
-            <h1>Stitch AI</h1>
+            <h1>Health Vault</h1>
             <p>Advanced Clinical Diagnostics</p>
         </div>
         <div style="padding: 30px; background-color: #ffffff;">
             <h2>Account Verification Required</h2>
             <p>Dear {full_name},</p>
-            <p>A practitioner has registered your email on the Stitch AI Clinical Portal. To access your diagnostic reports and clinical insights, please verify your account using the code below:</p>
+            <p>A practitioner has registered your email on the Health Vault Clinical Portal. To access your diagnostic reports and clinical insights, please verify your account using the code below:</p>
             <div style="font-size: 36px; font-family: 'Courier New', monospace; font-weight: bold; letter-spacing: 10px; padding: 25px; background: #eff6ff; color: #1e40af; border: 1px dashed #bfdbfe; display: inline-block; border-radius: 8px; margin: 20px 0;">
                 {verification_code}
             </div>
             <p style="color: #94a3b8; font-size: 12px;">This code is valid for 5 minutes. Do not share this code with anyone.</p>
         </div>
         <div style="background-color: #f4f7f9; padding: 20px; text-align: center; font-size: 12px; color: #777;">
-            &copy; 2026 Stitch AI Clinical Network. All rights reserved.<br>
+            &copy; 2026 Health Vault Clinical Network. All rights reserved.<br>
             This is an automated clinical notification. Please do not reply.
         </div>
     </div>
@@ -150,13 +150,13 @@ def get_report_notification_template(patient_name, provider_name, provider_email
     return f"""
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e1e8ed; border-radius: 8px; overflow: hidden;">
         <div style="background-color: #0d6efd; color: white; padding: 30px; text-align: center;">
-            <h1>Stitch AI</h1>
+            <h1>Health Vault</h1>
             <p>Advanced Clinical Diagnostics</p>
         </div>
         <div style="padding: 30px; background-color: #ffffff;">
             <h2>New Clinical Report Available</h2>
             <p>Dear {patient_name},</p>
-            <p>Your healthcare provider, {provider_name} ({provider_email}), has uploaded a new diagnostic report to your Stitch AI Patient Portal.</p>
+            <p>Your healthcare provider, {provider_name} ({provider_email}), has uploaded a new diagnostic report to your Health Vault Patient Portal.</p>
             <div style="background-color: #f8f9fa; border: 1px dashed #0d6efd; padding: 20px; border-radius: 6px; margin: 20px 0;">
                 <p style="margin: 0; font-weight: bold; color: #0d6efd;">Report Summary:</p>
                 <p style="margin-top: 10px;">{report_summary}</p>
@@ -164,7 +164,7 @@ def get_report_notification_template(patient_name, provider_name, provider_email
             <a href="{link}" class="btn" style="background-color: #0d6efd; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Your Report</a>
         </div>
         <div style="background-color: #f4f7f9; padding: 20px; text-align: center; font-size: 12px; color: #777;">
-            &copy; 2026 Stitch AI Clinical Network. All rights reserved.<br>
+            &copy; 2026 Health Vault Clinical Network. All rights reserved.<br>
             This is an automated clinical notification. Please do not reply.
         </div>
     </div>
@@ -177,7 +177,7 @@ def get_review_received_template(full_name, issue_type, issue_details):
     <div style="font-family: sans-serif; max-width: 500px; margin: auto; padding: 30px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f0fdf4;">
         <h3 style="color: #166534; margin-top: 0;">Support Request Received</h3>
         <p>Dear {full_name},</p>
-        <p>Thank you for reaching out to Stitch AI Support. We have received your request regarding the following issue:</p>
+        <p>Thank you for reaching out to Health Vault Support. We have received your request regarding the following issue:</p>
         <div style="background-color: #f8f9fa; border: 1px dashed #0d6efd; padding: 20px; border-radius: 6px; margin: 20px 0;">
             <p style="margin: 0; font-weight: bold; color: #0d6efd;">Issue Type:</p>
             <p style="margin-top: 10px;">{issue_type}</p>

@@ -133,62 +133,6 @@
     </div>
 </div>
 
-<div class="modal fade" id="admissionModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold">Patient Admission</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="admission-init-form" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Session Name</label>
-                        <input type="text" id="session-name-input" name="session_name" class="form-control" placeholder="e.g. Chest Pain Triage">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Patient Email (Verify Identity)</label>
-                        <div class="input-group">
-                            <input type="email" id="patient-email-probe" name="email" class="form-control" placeholder="patient@example.com">
-                            <button type="button" id="btn-verify-identity" class="btn btn-primary">Verify</button>
-                        </div>
-                        <div id="probe-feedback" class="mt-2"></div>
-                    </div>
-
-                    <div id="codeSection" class="mb-3 d-none">
-                        <label class="form-label small fw-bold">Enter Code</label>
-                        <div class="input-group">
-                            <input type="text" id="verificationCode" class="form-control" placeholder="6-digit code">
-                            <button type="button" id="btn-submit-code" class="btn btn-success">Verify</button>
-                        </div>
-                    </div>
-
-                    <div id="dynamic-admission-fields" class="d-none">
-                        <div id="registration-fields" class="mb-3 d-none">
-                            <label class="form-label small fw-bold">Full Name</label>
-                            <input type="text" id="reg-full-name" name="full_name" class="form-control mb-2">
-                            <label class="form-label small fw-bold">Medical Record Number (MRN)</label>
-                            <input type="text" id="reg-mrn" name="mrn" class="form-control mb-2">
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="form-label small fw-bold">Clinical Images (DICOM/JPG)</label>
-                            <div id="dropzone" class="border border-2 border-dashed rounded-3 p-4 text-center bg-light">
-                                <i class="bi bi-cloud-arrow-up fs-2 text-primary"></i>
-                                <p class="small text-muted mb-0">Drag & drop scans or <span class="text-primary fw-bold" style="cursor: pointer;" onclick="document.getElementById('file-input').click()">click to upload</span></p>
-                                <input type="file" id="file-input" name="scans" multiple class="d-none">
-                                <div id="file-preview" class="mt-2 small text-primary fw-bold"></div>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="btn-submit-admission" class="btn btn-primary w-100 d-none">Initialize Session</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}

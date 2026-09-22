@@ -24,6 +24,12 @@ class ImageRouter:
         self._load_weights(self.subject_selector, "subject_selector.pth")
         self.subject_selector.to(self.device).eval()
 
+        # Optional binary gate trained with medical and non-medical examples.
+        self.medical_gate = models.resnet18()
+        self.medical_gate.fc = nn.Linear(self.medical_gate.fc.in_features, 2)
+        self.medical_gate_ready = self._load_weights(self.medical_gate, "medical_gate.pth")
+        self.medical_gate.to(self.device).eval()
+
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -34,6 +40,26 @@ class ImageRouter:
         path = os.path.join(self.weights_base, filename)
         if os.path.exists(path):
             model.load_state_dict(torch.load(path, map_location=self.device, weights_only=True))
+            return True
+        return False
+
+    def validate_medical_image(self, image_path, threshold=0.75):
+        """Return a gate decision when the dedicated binary model is trained."""
+        if not self.medical_gate_ready:
+            return {"ready": False, "is_medical": True, "confidence": None}
+
+        image = Image.open(image_path).convert('RGB')
+        image_tensor = self.transform(image).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            probabilities = torch.softmax(self.medical_gate(image_tensor), dim=1)[0]
+
+        # ImageFolder sorts `medical` before `non_medical`, so class 0 is medical.
+        medical_confidence = float(probabilities[0].item())
+        return {
+            "ready": True,
+            "is_medical": medical_confidence >= threshold,
+            "confidence": round(medical_confidence * 100, 2)
+        }
 
     def _get_vision_expert(self, subject_id):
         """Loads the Tier 3 especialista weights."""
@@ -62,6 +88,7 @@ class ImageRouter:
             # TIER 1: UNIT (Pulm, Rad, Hem, Neuro)
             unit_logits = self.global_router(img_t)
             unit_idx = torch.max(unit_logits, 1)[1].item()
+            unit_confidence = torch.nn.functional.softmax(unit_logits, dim=1).max().item()
             
             # Fetch Unit IDs from DB ordered by creation/ID to match weights
             units = DiagnosticUnit.query.order_by(DiagnosticUnit.id).all()
@@ -70,6 +97,7 @@ class ImageRouter:
             # TIER 2: SUBJECT (Pneumonia, Malaria, etc.)
             subject_logits = self.subject_selector(img_t)
             sub_idx = torch.max(subject_logits, 1)[1].item()
+            subject_confidence = torch.nn.functional.softmax(subject_logits, dim=1).max().item()
             
             # Fetch only subjects belonging to that Unit
             subjects = Subject.query.order_by(Subject.id).all()
@@ -78,7 +106,7 @@ class ImageRouter:
             # TIER 3: CHAPTER (Pathophysiology, etc.)
             expert = self._get_vision_expert(selected_subject_id)
             chapter_idx = 0
-            final_conf = torch.nn.functional.softmax(subject_logits, dim=1).max().item()
+            final_conf = subject_confidence
 
             if expert:
                 diag_logits = expert(img_t)
@@ -93,5 +121,9 @@ class ImageRouter:
             "unit_id": selected_unit_id,
             "subject_id": selected_subject_id,
             "chapter_id": selected_chapter_id, 
-            "confidence": round(float(final_conf) * 100, 2)
+            "confidence": round(float(final_conf) * 100, 2),
+            # A valid medical image must be plausible at every routing tier.
+            "medical_confidence": round(
+                min(unit_confidence, subject_confidence, final_conf) * 100, 2
+            )
         }

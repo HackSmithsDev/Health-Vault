@@ -8,13 +8,24 @@ ENV/
 .env
 instance/
 .webassets-cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
 
-# --- Database & Migrations ---
+# --- Local database files and migration caches ---
 *.sqlite3
 *.db
-# We keep the migrations folder structure but ignore the actual pyc files
 migrations/__pycache__/
+*.pyc
+
+# Alembic migration source files are intentionally tracked.
 ai/ai_models
+ai/datasets/
+ai/medical_gate_data/
+ai/ai_models/medical_gate/
 
 # --- AI & Logs ---
 *.log
@@ -33,5 +44,4 @@ Thumbs.db
 .idea/
 *.swp
 
-migrations
 uploads

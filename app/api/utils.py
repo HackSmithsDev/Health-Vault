@@ -6,14 +6,18 @@ from datetime import datetime
 from app.services.ai import get_specialist_ai, get_image_router
 
 
-def run_async_intake(session_id, upload_path, filename):
+def run_async_intake(session_id, uploads, vision_results):
     with current_app.app_context():
         try:
             session = ClinicalSession.query.get(session_id)
             
-            # 1. AI PREDICTION (Returns raw indices)
-            # Returns: {'unit_id': 'pulmonology', 'subject_id': 'copd_screening', 'chapter_id': 'pathophysiology', 'confidence': 88.5}
-            vision_result = get_image_router().route_and_diagnose(upload_path)
+            # All uploads were preflighted before this background task. Use the
+            # strongest validated result as the case-level diagnosis.
+            best_index = max(
+                range(len(vision_results)),
+                key=lambda index: vision_results[index].get('confidence', 0)
+            )
+            vision_result = vision_results[best_index]
             
             # 2. TIER 1: UNIT ID
             # The router already returns the string ID for the Unit (e.g., 'pulmonology')
@@ -47,7 +51,11 @@ def run_async_intake(session_id, upload_path, filename):
                 )
 
             # SAVE RECORDS (Using your existing helpers)
-            img = save_image_record(session_id, f"uploads/clinical_images/{filename}", unit.id)
+            image_records = []
+            for _, filename in uploads:
+                image_records.append(
+                    save_image_record(session_id, f"uploads/clinical_images/{filename}", unit.id)
+                )
             
             # We pass the Subject and Chapter names to the report helper
             vision_result['subject_name'] = target_subject.name
@@ -55,7 +63,13 @@ def run_async_intake(session_id, upload_path, filename):
             
             report = create_diagnostic_report(session_id, vision_result, ai_response, "Stitch-HNN-v1")
             
-            save_message(session_id, 'user', "Initial scan submitted for autonomous intake.", image_id=img.id)
+            for image_record in image_records:
+                save_message(
+                    session_id,
+                    'user',
+                    "Initial diagnostic image submitted for autonomous intake.",
+                    image_id=image_record.id
+                )
             save_message(session_id, 'ai', ai_response, report_id=report.id)
 
             session.status = 'Completed'

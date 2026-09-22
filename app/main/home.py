@@ -15,27 +15,41 @@ def show_login_dialog():
 @main_bp.route('/index')
 @login_required
 def index():
-    # Logic can branch here based on session['user_role'] if the UI differs
-    # In your main.py route:
-    if session.get('user_role') == 'patient':
-        # Fetch sessions for the specific patient
-        # We rename the variable to 'health_records' to match your template
+    user_role = session.get('user_role')
+
+    if user_role == 'patient':
         health_records = ClinicalSession.query.options(
             db.joinedload(ClinicalSession.images),
             db.joinedload(ClinicalSession.reports)
-        ).filter_by(patient_id=current_user.id).order_by(ClinicalSession.created_at.desc()).limit(10).all()
+        ).filter(
+            ClinicalSession.patient_id == current_user.id
+        ).order_by(ClinicalSession.created_at.desc()).limit(10).all()
 
         return render_template('patient_index.html', health_records=health_records)
+
     else:
-        # For clinicians, show all recent sessions
-        recent_sessions = ClinicalSession.query.options(
+        # 1. Base query scoped strictly to this provider
+        provider_sessions = ClinicalSession.query.filter(
+            ClinicalSession.provider_id == current_user.id
+        )
+
+        # 2. Fetch recent 10 sessions with eager loads
+        recent_sessions = provider_sessions.options(
             db.joinedload(ClinicalSession.images),
             db.joinedload(ClinicalSession.reports)
         ).order_by(ClinicalSession.created_at.desc()).limit(10).all()
-        pending_count = ClinicalSession.query.filter_by(status='pending').count()
-        flagged_count = ClinicalSession.query.filter_by(status='flagged').count()
-        return render_template('index.html', recent_sessions=recent_sessions, 
-                               pending_count=pending_count, flagged_count=flagged_count)
+
+        # 3. Counts scoped to this provider
+        # Note: Match the casing with your default ('Pending' / 'Flagged')
+        pending_count = provider_sessions.filter(ClinicalSession.status == 'Pending').count()
+        flagged_count = provider_sessions.filter(ClinicalSession.status == 'Flagged').count()
+
+        return render_template(
+            'index.html',
+            recent_sessions=recent_sessions,
+            pending_count=pending_count,
+            flagged_count=flagged_count
+        )
 
 # --- 1. DUAL AVATAR LOGIC ---
 @main_bp.route('/update-user-avatar', methods=['POST'])

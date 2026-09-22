@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from sqlalchemy.orm import joinedload
+from PIL import Image, UnidentifiedImageError
 
 from app.extensions import db, executor
 from app.models import Provider, Patient, SettingsData, ClinicalSession, DiagnosticReport, Message, Subject, SupportMessage
@@ -177,20 +178,75 @@ def clinical_admission():
     if session.get('user_role') != 'provider':
         return jsonify({"status": "error", "message": "Only providers can admit patients"}), 403
 
-    data = request.form if request.form else request.get_json()
-    # Look for 'scans' (the name attribute in your HTML)
-    uploaded_files = request.files.getlist('scans') 
-
-    # Take the first file for the initial processing
-    file = uploaded_files[0]
+    data = request.form if request.form else (request.get_json() or {})
+    # The admission dialog accepts one or more images for initial AI intake.
+    uploaded_files = request.files.getlist('scans') or request.files.getlist('file')
         
     email = data.get('email')
 
     if not email:
         return jsonify({"status": "error", "message": "Email not provided."}), 400
     if not uploaded_files or uploaded_files[0].filename == '':
-        return jsonify({"status": "error", "message": "Diagnostic scan required."}), 400
+        return jsonify({"status": "error", "message": "Diagnostic image required."}), 400
 
+    if any(not uploaded_file.filename for uploaded_file in uploaded_files):
+        return jsonify({"status": "error", "message": "Every selected file must be a diagnostic image."}), 400
+
+    preflight_uploads = []
+    vision_results = []
+
+    def remove_uploads(paths):
+        for path in paths:
+            if os.path.exists(path):
+                os.remove(path)
+
+    try:
+        # Validate every file and run the image router before creating any
+        # patient/session records or starting specialist AI work.
+        image_router = get_image_router()
+        for uploaded_file in uploaded_files:
+            if not (uploaded_file.mimetype or '').startswith('image/'):
+                remove_uploads([path for path, _ in preflight_uploads])
+                return jsonify({
+                    "status": "error",
+                    "message": "Unsupported file. Only diagnostic images are accepted; PDF and other formats are blocked."
+                }), 400
+
+            with Image.open(uploaded_file.stream) as uploaded_image:
+                uploaded_image.verify()
+            uploaded_file.stream.seek(0)
+
+            safe_name = secure_filename(uploaded_file.filename)
+            temp_name = f"PRECHECK_{secrets.token_hex(8)}_{safe_name}"
+            temp_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'clinical_images', temp_name)
+            uploaded_file.save(temp_path)
+            preflight_uploads.append((temp_path, safe_name))
+
+            gate_result = image_router.validate_medical_image(temp_path)
+            if gate_result["ready"] and not gate_result["is_medical"]:
+                remove_uploads([path for path, _ in preflight_uploads])
+                return jsonify({
+                    "status": "error",
+                    "message": "This upload does not appear to be a supported medical image."
+                }), 400
+
+            vision_result = image_router.route_and_diagnose(temp_path)
+            vision_results.append(vision_result)
+    except (UnidentifiedImageError, OSError):
+        remove_uploads([path for path, _ in preflight_uploads])
+        return jsonify({
+            "status": "error",
+            "message": "One of the uploads is not a valid diagnostic image."
+        }), 400
+    except Exception:
+        remove_uploads([path for path, _ in preflight_uploads])
+        current_app.logger.exception("Medical image preflight failed")
+        return jsonify({
+            "status": "error",
+            "message": "The uploaded images could not be validated for clinical analysis."
+        }), 400
+
+    intake_uploads = []
     try:
         # Step 1: Handle Patient Record
         patient = Patient.query.filter_by(email=email).first()
@@ -235,17 +291,18 @@ def clinical_admission():
         db.session.add(new_session)
         db.session.flush() 
 
-        # 3. SAVE FILE LOCALLY (Immediate)
-        filename = secure_filename(f"INTAKE_{new_session.id}_{file.filename}")
-        upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'clinical_images', filename)
-        file.save(upload_path)
-
-        # 4. TRIGGER BACKGROUND INTAKE (Asynchronous)
-        # Offload the heavy Vision + AI + DB logic to the executor
-        from .utils import run_async_intake
-        executor.submit(run_async_intake, new_session.id, upload_path, filename)
+        # 3. Promote the preflighted files to their session-specific names.
+        for temp_path, original_name in preflight_uploads:
+            filename = secure_filename(f"INTAKE_{new_session.id}_{original_name}")
+            upload_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'clinical_images', filename)
+            os.replace(temp_path, upload_path)
+            intake_uploads.append((upload_path, filename))
 
         db.session.commit()
+
+        # Start only after the session and patient transaction is committed.
+        from .utils import run_async_intake
+        executor.submit(run_async_intake, new_session.id, intake_uploads, vision_results)
 
         # 5. INSTANT REDIRECT
         return jsonify({
@@ -255,6 +312,8 @@ def clinical_admission():
 
     except Exception as e:
         db.session.rollback()
+        remove_uploads([path for path, _ in preflight_uploads])
+        remove_uploads([path for path, _ in intake_uploads])
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -294,6 +353,29 @@ def ai_command_gateway(session_id):
 
     new_image_path = None
     if file:
+        if not (file.mimetype or '').startswith('image/'):
+            return jsonify({
+                "status": "error",
+                "message": "Only medical images can be sent to the vision model. PDF and other formats are blocked."
+            }), 400
+        try:
+            with Image.open(file.stream) as uploaded_image:
+                uploaded_image.verify()
+            file.stream.seek(0)
+        except (UnidentifiedImageError, OSError):
+            return jsonify({
+                "status": "error",
+                "message": "The uploaded file is not a valid medical image."
+            }), 400
+
+        gate_result = get_image_router().validate_medical_image(file.stream)
+        if gate_result["ready"] and not gate_result["is_medical"]:
+            return jsonify({
+                "status": "error",
+                "message": "This upload does not appear to be a supported medical image."
+            }), 400
+        file.stream.seek(0)
+
         filename = secure_filename(f"SUPP_{session_id}_{file.filename}")
         new_image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'clinical_images', filename)
         file.save(new_image_path)

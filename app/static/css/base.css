@@ -17,6 +17,16 @@ body {
     background-color: var(--bs-body-bg);
 }
 
+/* Coordinate the theme change so surfaces, text, borders, and controls do
+   not repaint at noticeably different speeds. */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+    transition: background-color 0.22s ease, color 0.22s ease,
+        border-color 0.22s ease, box-shadow 0.22s ease !important;
+}
+
 /* ==========================================================================
    2. SIDEBAR (The Health Literacy Navigator)
    ========================================================================== */
@@ -137,4 +147,40 @@ body {
 [data-bs-theme="dark"] .card {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background-color: #1e252b; /* Slightly softer than pure black */
+}
+
+/* Bootstrap utility classes use fixed light-theme colors, so keep shared
+   components aligned with the active color scheme. */
+[data-bs-theme="dark"] .text-dark {
+    color: var(--bs-body-color) !important;
+}
+
+[data-bs-theme="dark"] .bg-light,
+[data-bs-theme="dark"] .bg-white {
+    background-color: var(--bs-tertiary-bg) !important;
+}
+
+[data-bs-theme="dark"] .border-light {
+    border-color: var(--bs-border-color) !important;
+}
+
+[data-bs-theme="dark"] .btn-light,
+[data-bs-theme="dark"] .btn-white {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-bg: var(--bs-tertiary-bg);
+    --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-hover-color: var(--bs-body-color);
+    --bs-btn-hover-bg: var(--bs-secondary-bg);
+    --bs-btn-hover-border-color: var(--bs-border-color);
+    --bs-btn-active-color: var(--bs-body-color);
+    --bs-btn-active-bg: var(--bs-secondary-bg);
+    --bs-btn-active-border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .btn-outline-dark {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-hover-color: var(--bs-body-bg);
+    --bs-btn-hover-bg: var(--bs-body-color);
+    --bs-btn-hover-border-color: var(--bs-body-color);
 }

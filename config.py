@@ -10,16 +10,20 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'default-secret-key')
     
     # PostgreSQL Connection
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI')
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or os.getenv('DATABASE_URI')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Flask-Mail Credentials
-    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True') == 'True'
+    # SMTP settings. GoDaddy Professional Mail uses implicit SSL on port 465.
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtpout.secureserver.net')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 465))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'False').lower() == 'true'
+    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'True').lower() == 'true'
+    MAIL_DEBUG = os.getenv('MAIL_DEBUG', 'False').lower() == 'true'
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER')
+    MAIL_FROM = os.getenv('MAIL_FROM', MAIL_USERNAME)
+    MAIL_FROM_NAME = os.getenv('MAIL_FROM_NAME', '')
+    MAIL_DEFAULT_SENDER = (MAIL_FROM_NAME, MAIL_FROM) if MAIL_FROM_NAME else MAIL_FROM
 
     # Flask-Executor Configuration
     EXECUTOR_TYPE = 'thread'

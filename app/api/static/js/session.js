@@ -38,29 +38,29 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.attach-option').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            const type = btn.getAttribute('data-type');
-            if (type === 'img') fileInput.accept = "image/*";
-            else if (type === 'doc') fileInput.accept = ".pdf";
+            fileInput.accept = "image/*";
             fileInput.click(); // Open the file picker
         });
     });
 
     fileInput.addEventListener('change', function() {
         preview.innerHTML = '';
+        if (Array.from(this.files).some(file => !file.type.startsWith('image/'))) {
+            showFeatureNotice("Unsupported file", "Only medical images can be sent to the vision model. PDF and other formats are blocked.");
+            this.value = '';
+            toggleButtons();
+            return;
+        }
         Array.from(this.files).forEach(file => {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    preview.insertAdjacentHTML('beforeend', `
-                        <div class="position-relative">
-                            <img src="${e.target.result}" class="preview-item rounded border">
-                            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle p-1" style="cursor:pointer" onclick="this.parentElement.remove()">×</span>
-                        </div>`);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                preview.insertAdjacentHTML('beforeend', `<div class="preview-item d-flex align-items-center justify-content-center bg-light border small">PDF</div>`);
-            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.insertAdjacentHTML('beforeend', `
+                    <div class="position-relative">
+                        <img src="${e.target.result}" class="preview-item rounded border">
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle p-1" style="cursor:pointer" onclick="this.parentElement.remove()">×</span>
+                    </div>`);
+            };
+            reader.readAsDataURL(file);
         });
         toggleButtons();
     });
@@ -129,9 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const file = fileInput.files[0];
         const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        // A. PDF Gatekeeper
-        if (file && file.type === 'application/pdf') {
-            showFeatureNotice("PDF Clinical Records", "Clinical validation in progress. PDF support available soon.");
+        // A. Image gatekeeper
+        if (file && !file.type.startsWith('image/')) {
+            showFeatureNotice("Unsupported file", "Only medical images can be sent to the vision model.");
             return resetInputs();
         }
 
@@ -156,12 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleMidSessionAnalysis(file, message, timestamp) {
         const formData = new FormData();
         formData.append('file', file);
-        if (message) formData.append('message', message);
+        if (message) formData.append('query', message);
 
         const thinkingId = showThinkingState("Vision Engine is processing new scan...");
 
         try {
-            const response = await fetch(`/api/session/${CURRENT_SESSION_ID}/analyze`, {
+            const response = await fetch(`/api/session/${CURRENT_SESSION_ID}/ai/command`, {
                 method: 'POST',
                 body: formData
             });
@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
                             <i class="bi bi-robot text-white" style="font-size: 0.8rem;"></i>
                         </div>
-                        <span class="fw-bold small text-primary">Stitch AI Specialist</span>
+                        <span class="fw-bold small text-primary">Health Vault Specialist</span>
                     </div>` : ''}
                 <div class="message-bubble rounded-4 shadow-sm border ${sender === 'ai' ? 'border-start border-primary border-4' : ''}">
                     ${fileHtml}

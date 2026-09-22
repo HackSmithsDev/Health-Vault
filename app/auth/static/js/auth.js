@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("⚡ Stitch AI: Vanilla Clinical Auth Engine Active");
+    console.log("⚡ Health Vault: Vanilla Clinical Auth Engine Active");
 
     // Selectors
     const authSubtitle = document.getElementById('auth-subtitle');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (authSubtitle) {
-            authSubtitle.innerText = defaults[targetId] || 'Stitch AI Clinical Portal';
+            authSubtitle.innerText = defaults[targetId] || 'Health Vault Clinical Portal';
         }
     }
 

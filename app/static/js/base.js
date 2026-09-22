@@ -50,12 +50,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const activeTheme = htmlEl.getAttribute('data-bs-theme');
         const newTheme = activeTheme === 'light' ? 'dark' : 'light';
         
+        htmlEl.classList.add('theme-transition');
         // Apply to DOM
         htmlEl.setAttribute('data-bs-theme', newTheme);
         // Save for next page load
         localStorage.setItem('theme', newTheme);
         // Update Icon
         syncThemeIcon(newTheme);
+
+        window.setTimeout(() => {
+            htmlEl.classList.remove('theme-transition');
+        }, 250);
     });
 
     function syncThemeIcon(theme) {

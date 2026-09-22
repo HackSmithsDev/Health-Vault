@@ -4,6 +4,10 @@
     background: rgba(255, 255, 255, 0.9);
 }
 
+[data-bs-theme="dark"] .diagnostic-card {
+    background: var(--bs-tertiary-bg);
+}
+
 .diagnostic-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
@@ -43,6 +47,10 @@
     transition: all 0.2s ease;
 }
 
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: var(--bs-secondary-bg) !important;
+}
+
 .icon-box {
     width: 38px;
     height: 38px;
@@ -70,4 +78,8 @@
 thead th {
     border-bottom: 1px solid #eee !important;
     letter-spacing: 0.5px;
+}
+
+[data-bs-theme="dark"] thead th {
+    border-bottom-color: var(--bs-border-color) !important;
 }

@@ -1,0 +1,25 @@
+# Web application
+Flask==3.1.2
+Flask-Executor==1.0.0
+Flask-Login==0.6.3
+Flask-Mail==0.10.0
+Flask-Migrate==4.1.0
+Flask-SQLAlchemy==3.1.1
+
+# Database and cache
+SQLAlchemy==2.0.44
+alembic==1.18.4
+psycopg2-binary==2.9.11
+redis==7.0.0
+fakeredis==2.33.0
+
+# Configuration and email/AI services
+python-dotenv==1.1.1
+groq==1.0.0
+reportlab==4.4.10
+
+# Model training and inference
+Pillow==11.3.0
+torch==2.10.0
+torchvision==0.25.0
+kagglehub==1.0.0

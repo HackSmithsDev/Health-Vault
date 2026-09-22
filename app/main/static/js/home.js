@@ -1,5 +1,5 @@
 /**
- * STITCH AI - CLINICAL DASHBOARD (HOME.JS)
+ * Health Vault - CLINICAL DASHBOARD (HOME.JS)
  * State-managed Admission & Triage (Structured 2026)
  */
 
@@ -30,9 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
         subjectSelector: document.getElementById('subject-selector'),
 
         // File Upload / Dropzone
-        fileInput: document.getElementById('file-input'),
-        filePreview: document.getElementById('file-preview'),
-        dropzone: document.getElementById('dropzone'),
+        fileInput: document.getElementById('admission-file-input'),
+        filePreview: document.getElementById('file-preview-container'),
+        selectedFilename: document.getElementById('selected-filename'),
+        fileStatus: document.getElementById('file-status-text'),
+        dropzone: document.getElementById('admission-drop-zone'),
 
         // New Patient Inputs
         regInputs: [
@@ -43,23 +45,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 2. FILE UPLOAD & DROPZONE LOGIC ---
     
-    // Function to update the UI when files are selected
-    const updateFilePreview = (files) => {
-        if (files.length > 0 && elements.filePreview) {
-            elements.filePreview.innerHTML = `
-                <div class="mt-2">
-                    <i class="bi bi-check-circle-fill text-success me-1"></i> 
-                    <span class="fw-bold">${files.length} file(s) loaded</span>
-                    <div class="d-flex flex-wrap gap-1 mt-1">
-                        ${Array.from(files).slice(0, 3).map(f => `<span class="badge bg-primary-subtle text-primary border border-primary-subtle small">${f.name}</span>`).join('')}
-                        ${files.length > 3 ? `<span class="badge bg-secondary-subtle text-secondary small">+${files.length - 3} more</span>` : ''}
-                    </div>
-                </div>`;
+    const isSupportedImage = (file) => {
+        return Boolean(file && file.type.startsWith('image/'));
+    };
+
+    const showFileError = (message) => {
+        if (elements.fileInput) elements.fileInput.value = '';
+        elements.filePreview?.classList.add('d-none');
+        if (elements.fileStatus) {
+            elements.fileStatus.textContent = message;
+            elements.fileStatus.classList.add('text-danger');
         }
+    };
+
+    const updateFilePreview = (files) => {
+        const file = files[0];
+        if (!file) return showFileError('A diagnostic image is required.');
+        if (Array.from(files).some(file => !isSupportedImage(file))) {
+            return showFileError('Unsupported file. Upload diagnostic images only; PDF and other formats are blocked.');
+        }
+
+        elements.fileStatus?.classList.remove('text-danger');
+        if (elements.fileStatus) elements.fileStatus.textContent = `${files.length} diagnostic image${files.length === 1 ? '' : 's'} selected`;
+        if (elements.selectedFilename) {
+            elements.selectedFilename.textContent = Array.from(files).map(file => file.name).join(', ');
+        }
+        elements.filePreview?.classList.remove('d-none');
     };
 
     elements.fileInput?.addEventListener('change', function() {
         updateFilePreview(this.files);
+    });
+
+    elements.dropzone?.addEventListener('click', (event) => {
+        if (event.target !== elements.fileInput) elements.fileInput?.click();
     });
 
     // Handle Drag & Drop Events
@@ -86,8 +105,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const dt = e.dataTransfer;
         const files = dt.files;
         if (elements.fileInput) {
-            elements.fileInput.files = files; // Assign dropped files to the hidden input
-            updateFilePreview(files);
+            if (files.length > 0 && Array.from(files).every(isSupportedImage)) {
+                elements.fileInput.files = files;
+                updateFilePreview(files);
+            } else {
+                showFileError('Unsupported file. Upload diagnostic images only; PDF and other formats are blocked.');
+            }
         }
     }, false);
 
@@ -221,6 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 6. FINAL ADMISSION SUBMISSION ---
     elements.admissionForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const selectedFile = elements.fileInput?.files[0];
+        if (!elements.fileInput?.files.length || Array.from(elements.fileInput.files).some(file => !isSupportedImage(file))) {
+            showFileError('Upload at least one diagnostic image before initializing the session.');
+            return;
+        }
         const formData = new FormData(elements.admissionForm);
         
         elements.submitBtn.disabled = true;
@@ -254,7 +282,12 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.submitBtn?.classList.add('d-none');
         elements.codeSection?.classList.add('d-none');
         if (elements.feedback) elements.feedback.innerHTML = '';
-        if (elements.filePreview) elements.filePreview.innerHTML = '';
+        elements.filePreview?.classList.add('d-none');
+        if (elements.selectedFilename) elements.selectedFilename.textContent = '';
+        if (elements.fileStatus) {
+            elements.fileStatus.textContent = 'Drop scan here or click to upload';
+            elements.fileStatus.classList.remove('text-danger');
+        }
         
         elements.btnVerify.disabled = false;
         elements.btnVerify.innerHTML = 'Verify';

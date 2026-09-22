@@ -5,7 +5,7 @@ from flask import current_app
 class GroqSpecialist:
     def __init__(self):
         self._client = None
-        self.model = "llama-3.3-70b-versatile"
+        self.model = "openai/gpt-oss-120b"
         
         self.active_units = {
             "PULMONOLOGY": {"focus": "Respiratory Systems & Thoracic Imaging", "term": "Lung Health"},
