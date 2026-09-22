@@ -61,6 +61,24 @@ with it, the binary gate rejects non-clinical images before routing.
 - `config.py`: environment-backed application configuration
 - `wsgi.py`: application entry point
 
+## Render deployment
+
+The repository includes a Docker deployment with Gunicorn and an optional
+Cloudflare Tunnel token:
+
+```bash
+docker build -t health-vault .
+docker run --env-file .env -e FLASK_ENV=production -e CLOUDFLARE_TUNNEL_TOKEN="$CLOUDFLARE_TUNNEL_TOKEN" -p 8080:8080 health-vault
+```
+
+On Render, select **Docker** and configure these environment variables in the
+dashboard rather than committing them: `CLOUDFLARE_TUNNEL_TOKEN`,
+`DATABASE_URL`, `DIRECT_URL`, `REDIS_URL`, `GROQ_API_KEY`, `SECRET_KEY`, and
+the mail settings. The container runs `flask db upgrade` before Gunicorn.
+
+The Cloudflare tunnel's public hostname must route to the container's local
+Gunicorn origin on port `8080`.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).

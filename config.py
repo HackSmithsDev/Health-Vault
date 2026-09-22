@@ -12,6 +12,7 @@ class Config:
     # PostgreSQL Connection
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or os.getenv('DATABASE_URI')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    REDIS_URL = os.getenv('REDIS_URL') or os.getenv('REDIS_URI')
     
     # SMTP settings. GoDaddy Professional Mail uses implicit SSL on port 465.
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtpout.secureserver.net')

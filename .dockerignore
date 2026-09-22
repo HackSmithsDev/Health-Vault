@@ -1,0 +1,22 @@
+.env
+.git/
+.github/
+.vscode/
+__pycache__/
+*.py[cod]
+*.log
+.DS_Store
+
+# Local and generated data
+ai/ai_models/
+ai/datasets/
+ai/ai_models/medical_gate/
+app/static/uploads/
+instance/
+
+# Local environments and caches
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

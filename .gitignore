@@ -34,7 +34,6 @@ vector_store/
 nltk_data/
 
 # --- Docker & OS ---
-.dockerignore
 docker-compose.override.yml
 .DS_Store
 Thumbs.db
