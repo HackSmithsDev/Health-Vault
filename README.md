@@ -76,8 +76,9 @@ dashboard rather than committing them: `CLOUDFLARE_TUNNEL_TOKEN`,
 `DATABASE_URL`, `DIRECT_URL`, `REDIS_URL`, `GROQ_API_KEY`, `SECRET_KEY`, and
 the mail settings. The container runs `flask db upgrade` before Gunicorn.
 
-The Cloudflare tunnel's public hostname must route to the container's local
-Gunicorn origin on port `8080`.
+The Cloudflare tunnel's public hostname must route to the container's Gunicorn
+origin on the same port Render provides through `PORT` (use `8080` when running
+the container locally).
 
 ## License
 

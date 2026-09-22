@@ -11,8 +11,8 @@ fi
 # Apply committed Alembic migrations before accepting traffic.
 flask --app wsgi:app db upgrade
 
-echo "Starting Gunicorn on 127.0.0.1:${PORT}..."
-gunicorn --workers 2 --bind "127.0.0.1:${PORT}" --timeout 120 wsgi:app &
+echo "Starting Gunicorn on 0.0.0.0:${PORT}..."
+gunicorn --workers 2 --bind "0.0.0.0:${PORT}" --timeout 120 wsgi:app &
 gunicorn_pid=$!
 
 cleanup() {
