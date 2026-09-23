@@ -413,7 +413,8 @@
         </div>
     </div>
 
-    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true"
+        {% if not current_user.is_authenticated %}data-bs-backdrop="static" data-bs-keyboard="false"{% endif %}>
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content shadow-lg border-0">
                 <div class="modal-header {% if current_user.is_authenticated %}bg-success{% else %}bg-primary{% endif %} text-white py-3">
