@@ -70,16 +70,31 @@ class GroqSpecialist:
             current_app.logger.error(f"Groq Clinical Insight Error: {str(e)}")
             return "⚠️ **Clinical Reasoning Engine Offline.**"
 
-    def generate_patient_friendly_explanation(self, unit_id, subject_name, chapter_name, query=None, history=None):
+    def generate_patient_friendly_explanation(
+        self,
+        unit_id,
+        subject_name,
+        chapter_name,
+        query=None,
+        history=None,
+        report=None,
+    ):
+        """8th-Grade Liaison: Empathetic explanation for the patient.
+
+        Supports an optional user 'query' and 'report' data.
         """
-        8th-Grade Liaison: Empathetic explanation for the patient.
-        Now supports an optional user 'query' for specific patient concerns.
-        """
-        unit_info = self.active_units.get(unit_id.upper(), {"term": "Specialist Care"})
-        
+        unit_info = self.active_units.get(
+            unit_id.upper(), {"term": "Specialist Care"}
+        )
+
+        report_context = ""
+        if report:
+            # Pull any relevant fields your report object contains (e.g. summary, notes, or confidence)
+            report_context = f"\nADDITIONAL REPORT CONTEXT: {getattr(report, 'summary', str(report))}"
+
         system_prompt = f"""
         ROLE: Patient Liaison for {unit_info['term']}.
-        OFFICIAL FINDING: {subject_name} ({chapter_name}).
+        OFFICIAL FINDING: {subject_name} ({chapter_name}).{report_context}
 
         ETHICAL PROTOCOL:
         1. Explain finding '{chapter_name}' in simple terms (8th-grade level).
@@ -96,17 +111,19 @@ class GroqSpecialist:
                 role = "assistant" if msg.sender == "ai" else "user"
                 messages.append({"role": role, "content": msg.content})
 
-        # Logic: Use the patient's specific question if it exists, otherwise provide a general summary.
-        user_content = query if query else f"I just got my results for {subject_name} ({chapter_name}). Can you explain what this means in simple terms?"
-        
+        user_content = (
+            query
+            if query
+            else f"I just got my results for {subject_name} ({chapter_name}). Can you explain what this means in simple terms?"
+        )
         messages.append({"role": "user", "content": user_content})
 
         try:
             completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                temperature=0.4, # Higher temperature for a more "human" and comforting tone
-                max_tokens=500
+                temperature=0.4,
+                max_tokens=500,
             )
             return completion.choices[0].message.content
         except Exception as e:

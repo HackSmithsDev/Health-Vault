@@ -155,16 +155,58 @@
                 </form>
             </div>
 
+            <!-- Forgot Password Box (Expands inline for OTP) -->
             <div id="forgot-box" class="auth-box d-none">
-                <p class="small text-muted mb-4">Enter your hospital email to receive a secure recovery token.</p>
+                <p class="small text-muted mb-4" id="forgot-desc">Enter your hospital email to receive a secure recovery token.</p>
+                
                 <form id="form-forgot">
                     <div class="mb-3">
-                        <input type="email" id="forgot-email" class="form-control py-2" placeholder="email@hospital.org" required>
+                        <label for="forgot-email" class="form-label small fw-bold text-uppercase text-muted">Hospital Email</label>
+                        <input type="email" id="forgot-email" class="form-control py-2 shadow-sm" placeholder="email@hospital.org" required>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Request Token</button>
+
+                    <!-- Hidden by default; expands once email exists and code is dispatched -->
+                    <div id="otp-expand-section" class="d-none">
+                        <hr class="my-3 text-muted">
+                        <div class="mb-3">
+                            <label for="recovery-otp" class="form-label small fw-bold text-uppercase text-muted">Verification Code</label>
+                            <input type="text" id="recovery-otp" class="form-control text-center fs-3 fw-bold tracking-widest border-primary" maxlength="6" inputmode="numeric" placeholder="000000">
+                            <div class="form-text extra-small text-muted">Enter the 6-digit token sent to your email.</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-forgot-action" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                        Request Token
+                    </button>
                 </form>
+
                 <div class="text-center mt-3">
                     <a href="#" class="small text-decoration-none switch-box" data-target="signin-box">Return to Sign In</a>
+                </div>
+            </div>
+
+            <!-- Reset Password Box -->
+            <div id="reset-box" class="auth-box d-none">
+                <div class="mb-4 text-center">
+                    <i class="bi bi-shield-lock-fill text-primary fs-1"></i>
+                    <h5 class="mt-2 fw-bold">Set New Password</h5>
+                    <p class="small text-muted">Enter your new clinical access credentials.</p>
+                </div>
+                <form id="form-reset-password">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">New Password</label>
+                        <input type="password" id="reset-new-password" class="form-control py-2 shadow-sm" required minlength="6">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase text-muted">Confirm Password</label>
+                        <input type="password" id="reset-confirm-password" class="form-control py-2 shadow-sm" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                        Confirm & Update
+                    </button>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="#" class="small text-decoration-none switch-box" data-target="signin-box">Back to Sign In</a>
                 </div>
             </div>
 

@@ -108,19 +108,18 @@ def signup():
 
 @auth_bp.route("/forget_password", methods=['POST'])
 def forgot_password():
-    email = request.get_json().get('email')
+    email = request.get_json().get('email', '').strip()
     user = Provider.query.filter_by(email=email).first() or Patient.query.filter_by(email=email).first()
     
     if not user:
-        # Security best practice: don't reveal if user exists
-        return jsonify({"status": "success", "message": "Verification token sent."})
+        return jsonify({"status": "error", "message": "Email not found in clinical registry."}), 404
 
     otp = f"{secrets.randbelow(1000000):06d}"
     get_redis().set(f"reset_otp:{email}", otp, ex=900) # 15 min expiry
     
     # Offload email to executor to prevent timeout
     executor.submit(send_otp_email, email, otp)
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success", "message": "Verification token sent."})
 
 @auth_bp.route("/verify_otp", methods=['POST'])
 def verify_otp():
