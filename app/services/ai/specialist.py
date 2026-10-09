@@ -5,7 +5,6 @@ from flask import current_app
 class GroqSpecialist:
     def __init__(self):
         self._client = None
-        self.model = "openai/gpt-oss-120b"
         
         self.active_units = {
             "PULMONOLOGY": {"focus": "Respiratory Systems & Thoracic Imaging", "term": "Lung Health"},
@@ -60,7 +59,7 @@ class GroqSpecialist:
 
         try:
             completion = self.client.chat.completions.create(
-                model=self.model,
+                model=current_app.config.get("GROQ_MODEL"),
                 messages=messages,
                 temperature=0.1,
                 max_tokens=800
@@ -120,7 +119,7 @@ class GroqSpecialist:
 
         try:
             completion = self.client.chat.completions.create(
-                model=self.model,
+                model=current_app.config.get("GROQ_MODEL"),
                 messages=messages,
                 temperature=0.4,
                 max_tokens=500,
